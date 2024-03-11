@@ -1,5 +1,3 @@
-// prisma/seed.js
-
 const { PrismaClient } = require('@prisma/client')
 const bcrypt = require('bcryptjs')
 const { ROLE_HIERARCHY, ROLES } = require('../src/constants/role-hierarchy')

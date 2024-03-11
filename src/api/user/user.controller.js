@@ -26,6 +26,13 @@ exports.register = asyncHandler(async (req, res) => {
         expiresIn: '24h',
     })
 
+    res.cookie('token', token, {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000,
+    })
+
     res.status(201).json({
         message: USER_REGISTERED_SUCCESS,
         userId: user.id,
