@@ -1,11 +1,5 @@
 const express = require('express')
 const bookController = require('./book.controller')
-const {
-    BOOK_TITLE_REQUIRED_ERROR,
-    BOOK_AUTHOR_REQUIRED_ERROR,
-    BOOK_TITLE_EMPTY_ERROR,
-    BOOK_AUTHOR_EMPTY_ERROR,
-} = require('./books.constants')
 const { createBookDto, updateBookDto } = require('./book.request.dto')
 
 const router = express.Router()

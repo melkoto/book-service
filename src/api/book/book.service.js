@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
+const prisma = require('../../../prisma/prismaClient')
 
 exports.findAll = async () => {
     return prisma.book.findMany()

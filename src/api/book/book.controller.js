@@ -1,6 +1,6 @@
-const asyncHandler = require('../../middleware/asyncHandler')
 const bookService = require('./book.service')
 const bookResponseDto = require('./book.response.dto')
+const asyncHandler = require('../../middleware/asyncHandler')
 
 exports.getAllBooks = asyncHandler(async (req, res) => {
     const books = await bookService.findAll()
@@ -22,16 +22,12 @@ exports.createBook = asyncHandler(async (req, res) => {
 
     try {
         const newBook = await bookService.create({
-            title,
-            description,
-            author,
-            userId,
+            title, description, author, userId,
         })
         res.status(201).json(newBook)
     } catch (error) {
         res.status(500).json({
-            message: 'An error occurred during the book creation process.',
-            error: error.message,
+            message: 'An error occurred during the book creation process.', error: error.message,
         })
     }
 })

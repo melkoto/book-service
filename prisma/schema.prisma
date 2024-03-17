@@ -76,7 +76,18 @@ model User {
   dislikes  Dislike[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  refreshTokens RefreshToken[]
 }
+
+model RefreshToken {
+  id         Int      @id @default(autoincrement())
+  token      String   @unique
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  expiryDate DateTime
+  createdAt  DateTime @default(now())
+}
+
 
 enum Role {
   USER
