@@ -20,6 +20,12 @@ exports.register = asyncHandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await userService.generateTokens(user.id)
 
+    const userInfo = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+    }
+
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
         sameSite: 'strict',
@@ -36,7 +42,7 @@ exports.register = asyncHandler(async (req, res) => {
 
     res.status(201).json({
         message: USER_REGISTERED_SUCCESS,
-        userId: user.id,
+        user: userInfo,
         accessToken,
         refreshToken,
     })
@@ -55,7 +61,7 @@ exports.login = asyncHandler(async (req, res) => {
 
         res.json({
             message: USER_LOGGED_IN_SUCCESS,
-            userId: user.id,
+            user: user,
             accessToken,
             refreshToken,
         })
@@ -103,10 +109,3 @@ exports.refreshToken = asyncHandler(async (req, res) => {
     }
 })
 
-exports.logout = asyncHandler(async (req, res) => {
-    res.clearCookie('accessToken')
-    res.clearCookie('refreshToken')
-
-    await userService.deleteRefreshToken(req.user.id)
-    res.status(200).json({ message: 'Logged out successfully' })
-})

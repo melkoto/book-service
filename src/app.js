@@ -15,8 +15,14 @@ const PORT = process.env.PORT || 4000
 
 app.use(express.json())
 app.use(morgan('dev'))
-app.use(cors())
 app.use(cookieParser())
+
+const corsOptions = {
+    origin: 'http://localhost:5173', // Указывай здесь домен фронтенда
+    credentials: true, // Разрешить отправку куки с кросс-доменных запросов
+}
+
+app.use(cors(corsOptions))
 
 app.use('/api/users', userRoutes)
 app.use('/api/books', verifyToken, bookRoutes)
