@@ -1,68 +1,81 @@
-```Получение всех книг:
-GET /books
-Получение книги по ID:
+# Документация по запуску проекта Book Service
 
-GET /books/{bookId}
-Создание новой книги:
+## Необходимые условия
 
-POST /books
-Обновление информации о книге:
+Перед началом работы убедитесь, что у вас установлены:
 
-PUT /books/{bookId}
-Удаление книги:
+- [Node.js](https://nodejs.org/) (рекомендуется использовать последнюю стабильную версию)
+- [npm](https://www.npmjs.com/) (обычно устанавливается вместе с Node.js)
+- Система управления базами данных (например, PostgreSQL, MySQL, SQLite). Пример будет использовать PostgreSQL.
 
-DELETE /books/{bookId}
-Получение всех комментариев для определенной книги:
+## Настройка базы данных
 
-GET /books/{bookId}/comments
-Получение комментария по ID:
+1. Установите и запустите вашу СУБД. Пример документации для [PostgreSQL](https://www.postgresql.org/docs/).
 
-GET /comments/{commentId}
-Создание нового комментария для книги:
+2. Создайте базу данных, которую будет использовать ваше приложение.
 
-POST /books/{bookId}/comments
-Обновление информации о комментарии:
+3. Настройте параметры подключения к базе данных в файле `.env` в корне проекта:
 
-PUT /comments/{commentId}
-Удаление комментария:
+   ```
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE_NAME"
+   ```
 
-DELETE /comments/{commentId}
-Получение всех лайков для определенного комментария или книги:
+   Замените `USER`, `PASSWORD`, `HOST`, `PORT` и `DATABASE_NAME` на соответствующие значения, используемые для вашей
+   базы данных.
 
-GET /comments/{commentId}/likes
-GET /books/{bookId}/likes
-Добавление лайка к комментарию или книге:
+## Настройка проекта
 
-POST /comments/{commentId}/likes
-POST /books/{bookId}/likes
-Удаление лайка:
+1. Клонируйте репозиторий:
 
-DELETE /likes/{likeId}
-Получение всех дизлайков для определенного комментария или книги:
+   ```
+   git clone https://github.com/melkoto/book-service.git
+   ```
 
-GET /comments/{commentId}/dislikes
-GET /books/{bookId}/dislikes
-Добавление дизлайка к комментарию или книге:
+2. Перейдите в каталог проекта:
 
-POST /comments/{commentId}/dislikes
-POST /books/{bookId}/dislikes
-Удаление дизлайка:
+   ```
+   cd book-service
+   ```
 
-DELETE /dislikes/{dislikeId}
-Получение всех пользователей:
+3. Установите зависимости:
 
-GET /users
-Получение пользователя по ID:
+   ```
+   npm install
+   ```
 
-GET /users/{userId}
-Создание нового пользователя:
+4. Запустите миграции базы данных (убедитесь, что ваша СУБД запущена и доступна):
 
-POST /users
-Обновление информации о пользователе:
+   ```
+   npx prisma migrate deploy
+   ```
 
-PUT /users/{userId}
-Удаление пользователя:
+   Это создаст необходимые таблицы в вашей базе данных в соответствии с моделью Prisma.
 
-DELETE /users/{userId}
+## Запуск проекта
 
-```
+- Для запуска сервера в режиме разработки выполните:
+
+  ```
+  npm run dev
+  ```
+
+- Для запуска сервера в продакшн-режиме сначала соберите проект:
+
+  ```
+  npm run build
+  ```
+
+  Затем запустите собранную версию:
+
+  ```
+  npm start
+  ```
+
+## Дополнительные шаги
+
+- Для работы с токенами аутентификации и обновления вам потребуется определить переменные окружения `JWT_SECRET`
+  и `REFRESH_TOKEN_SECRET` в файле `.env`. Вы можете сгенерировать секретные ключи, используя Node.js:
+
+  ```javascript
+  require('crypto').randomBytes(64).toString('hex');
+  ```
