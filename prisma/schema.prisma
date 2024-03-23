@@ -19,7 +19,7 @@ model Book {
   description String
   author      String
   userId      Int
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   comments    Comment[]
   likes       Like[]
   dislikes    Dislike[]
@@ -33,7 +33,7 @@ model Comment {
   bookId    Int
   book      Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
   userId    Int
-  user      User      @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes     Like[]
   dislikes  Dislike[]
   createdAt DateTime  @default(now())
@@ -83,7 +83,7 @@ model RefreshToken {
   id         Int      @id @default(autoincrement())
   token      String   @unique
   userId     Int
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiryDate DateTime
   createdAt  DateTime @default(now())
 }

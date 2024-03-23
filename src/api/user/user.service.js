@@ -3,17 +3,6 @@ const { verify, sign } = require('jsonwebtoken')
 const { USER_NOT_FOUND, INVALID_PASSWORD } = require('./user.constants')
 const prisma = require('../../../prisma/prismaClient')
 
-exports.createUser = async ({ email, password, name }) => {
-    const hashedPassword = await bcrypt.hash(password, 8)
-    return prisma.user.create({
-        data: {
-            name,
-            email,
-            password: hashedPassword,
-        },
-    })
-}
-
 exports.authenticateUser = async ({ email, password }) => {
     const user = await prisma.user.findUnique({
         where: { email },
@@ -30,6 +19,27 @@ exports.authenticateUser = async ({ email, password }) => {
     }
 
     return user
+}
+
+exports.generateTokens = async (userId) => {
+    const accessToken = sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' })
+    const refreshToken = await this.createOrUpdateRefreshToken(userId)
+    return { accessToken, refreshToken }
+}
+
+exports.deleteRefreshToken = async (token) => {
+    await prisma.refreshToken.delete({
+        where: { token },
+    })
+}
+
+exports.createUser = async ({ email, password, name }) => {
+    const hashedPassword = await bcrypt.hash(password, 8)
+    return prisma.user.create({
+        data: {
+            name, email, password: hashedPassword,
+        },
+    })
 }
 
 exports.verifyAndDeleteRefreshToken = async (refreshToken) => {
@@ -52,26 +62,27 @@ exports.verifyAndDeleteRefreshToken = async (refreshToken) => {
     return decoded.userId
 }
 
-exports.createRefreshToken = async (userId) => {
+exports.createOrUpdateRefreshToken = async (userId) => {
     const refreshToken = sign({ userId }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' })
-    const expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 дней
+    const expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
-    await prisma.refreshToken.create({
-        data: {
-            token: refreshToken,
-            userId,
-            expiryDate,
-        },
+    const existingToken = await prisma.refreshToken.findFirst({
+        where: { userId: userId },
     })
+
+    if (existingToken) {
+        await prisma.refreshToken.update({
+            where: { id: existingToken.id }, data: { token: refreshToken, expiryDate: expiryDate },
+        })
+    } else {
+        await prisma.refreshToken.create({
+            data: { userId: userId, token: refreshToken, expiryDate: expiryDate },
+        })
+    }
 
     return refreshToken
 }
 
-exports.deleteRefreshToken = async (token) => {
-    await prisma.refreshToken.delete({
-        where: { token },
-    })
-}
 
 exports.verifyRefreshToken = async (token) => {
     const refreshToken = await prisma.refreshToken.findUnique({
@@ -83,11 +94,5 @@ exports.verifyRefreshToken = async (token) => {
     }
 
     return verify(token, process.env.REFRESH_TOKEN_SECRET)
-}
-
-exports.generateTokens = async (userId) => {
-    const accessToken = sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' })
-    const refreshToken = await this.createRefreshToken(userId) // Создание и сохранение refresh токена
-    return { accessToken, refreshToken }
 }
 

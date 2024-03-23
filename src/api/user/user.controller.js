@@ -8,6 +8,56 @@ const {
     EMAIL_PASSWORD_ERROR,
 } = require('./user.constants')
 const asyncHandler = require('../../middleware/asyncHandler')
+const { userResponseDto } = require('./user.response.dto')
+
+
+exports.login = asyncHandler(async (req, res) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
+
+    const { email, password } = req.body
+
+    try {
+        const user = await userService.authenticateUser({ email, password })
+        const { accessToken, refreshToken } = await userService.generateTokens(user.id)
+
+        res.json({
+            message: USER_LOGGED_IN_SUCCESS,
+            user: userResponseDto(user),
+            accessToken,
+            refreshToken,
+        })
+    } catch (error) {
+        if (error.message === USER_NOT_FOUND || error.message === INVALID_PASSWORD) {
+            return res.status(401).json({ message: EMAIL_PASSWORD_ERROR })
+        }
+        res.status(500).json({
+            message: 'An error occurred during the login process.',
+        })
+    }
+})
+
+
+exports.logout = async (req, res) => {
+    const { refreshtoken } = req.headers
+
+    if (!refreshtoken) {
+        return res.status(400).json({ message: 'Refresh token is required for logout' })
+    }
+
+    try {
+        await userService.deleteRefreshToken(refreshtoken)
+
+        res.clearCookie('refreshToken')
+        res.clearCookie('accessToken')
+
+        res.status(200).json({ message: 'Logged out successfully' })
+    } catch (error) {
+        res.status(500).json({ message: 'An error occurred during the logout process.' })
+    }
+}
 
 exports.register = asyncHandler(async (req, res) => {
     const errors = validationResult(req)
@@ -48,33 +98,6 @@ exports.register = asyncHandler(async (req, res) => {
     })
 })
 
-exports.login = asyncHandler(async (req, res) => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() })
-    }
-
-    const { email, password } = req.body
-    try {
-        const user = await userService.authenticateUser({ email, password })
-        const { accessToken, refreshToken } = await userService.generateTokens(user.id)
-
-        res.json({
-            message: USER_LOGGED_IN_SUCCESS,
-            user: user,
-            accessToken,
-            refreshToken,
-        })
-    } catch (error) {
-        if (error.message === USER_NOT_FOUND || error.message === INVALID_PASSWORD) {
-            return res.status(401).json({ message: EMAIL_PASSWORD_ERROR })
-        }
-        res.status(500).json({
-            message: 'An error occurred during the login process.',
-        })
-    }
-})
-
 exports.refreshToken = asyncHandler(async (req, res) => {
     const { refreshToken } = req.cookies
     if (!refreshToken) {
@@ -108,4 +131,3 @@ exports.refreshToken = asyncHandler(async (req, res) => {
         res.status(401).json({ message: 'Invalid refresh token' })
     }
 })
-
